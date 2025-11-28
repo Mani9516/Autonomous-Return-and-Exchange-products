@@ -1,0 +1,5 @@
+{
+  "name": "Copy of AutoReturn AI Agent",
+  "description": "An autonomous customer service agent simulation demonstrating product exchanges and returns using function calling to manipulate a simulated database.",
+  "requestFramePermissions": []
+}
