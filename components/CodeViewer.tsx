@@ -1,1 +1,8 @@
-// Component removed for production view
+import React from 'react';
+
+// Component removed as requested.
+const CodeViewer = () => {
+  return null;
+};
+
+export default CodeViewer;
