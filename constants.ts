@@ -1,502 +1,353 @@
-import { Order, OrderStatus, Product, User, CartItem } from './types';
-
-export const ALL_PRODUCTS: Product[] = [
-  // --- Apparel & Fashion ---
-  {
-    id: "prod_1",
-    name: "Eco-Fleece Hoodie",
-    price: 85,
-    color: "Sage Green",
-    size: "M",
-    image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=400&q=80",
-    category: "Apparel",
-    tags: ["sustainable", "casual", "winter"]
-  },
-  {
-    id: "prod_7",
-    name: "Vintage Denim Jacket",
-    price: 110,
-    color: "Blue Wash",
-    size: "L",
-    image: "https://images.unsplash.com/photo-1576871337622-98d48d1cf531?auto=format&fit=crop&w=400&q=80",
-    category: "Fashion",
-    tags: ["vintage", "casual", "outerwear"]
-  },
-  {
-    id: "prod_8",
-    name: "Silk Scarf",
-    price: 65,
-    color: "Floral Pattern",
-    size: "One Size",
-    image: "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?auto=format&fit=crop&w=400&q=80",
-    category: "Fashion",
-    tags: ["luxury", "accessories"]
-  },
-  {
-    id: "prod_19",
-    name: "Linen Button Shirt",
-    price: 55,
-    color: "Beige",
-    size: "L",
-    image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=400&q=80",
-    category: "Fashion",
-    tags: ["summer", "casual"]
-  },
-  {
-    id: "prod_20",
-    name: "Floral Summer Dress",
-    price: 75,
-    color: "Yellow",
-    size: "S",
-    image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=400&q=80",
-    category: "Fashion",
-    tags: ["summer", "party"]
-  },
-
-  // --- Footwear ---
-  {
-    id: "prod_15",
-    name: "Urban Runner Sneakers",
-    price: 120,
-    color: "Grey/Neon",
-    size: "US 10",
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80",
-    category: "Footwear",
-    tags: ["sport", "fashion"]
-  },
-  {
-    id: "prod_21",
-    name: "Leather Hiking Boots",
-    price: 160,
-    color: "Brown",
-    size: "US 9",
-    image: "https://images.unsplash.com/photo-1520639888713-7851133b1ed0?auto=format&fit=crop&w=400&q=80",
-    category: "Footwear",
-    tags: ["outdoor", "durable"]
-  },
-  {
-    id: "prod_22",
-    name: "Classic Loafers",
-    price: 95,
-    color: "Black",
-    size: "US 10",
-    image: "https://images.unsplash.com/photo-1614252369475-531eba835eb1?auto=format&fit=crop&w=400&q=80",
-    category: "Footwear",
-    tags: ["formal", "office"]
-  },
-
-  // --- Electronics & Gadgets ---
-  {
-    id: "prod_2",
-    name: "Wireless Headphones",
-    price: 299,
-    color: "Matte Black",
-    size: "One Size",
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80",
-    category: "Electronics",
-    tags: ["audio", "travel", "tech"]
-  },
-  {
-    id: "prod_4",
-    name: "Smart Fitness Watch",
-    price: 199,
-    color: "Midnight Blue",
-    size: "One Size",
-    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80",
-    category: "Gadgets",
-    tags: ["fitness", "tech", "health"]
-  },
-  {
-    id: "prod_9",
-    name: "Mini Drone 4K",
-    price: 450,
-    color: "White",
-    size: "Standard",
-    // Updated image to a clear drone shot
-    image: "https://images.unsplash.com/photo-1579829366248-204fe8413f31?auto=format&fit=crop&w=400&q=80",
-    category: "Gadgets",
-    tags: ["photography", "tech", "outdoor"]
-  },
-  {
-    id: "prod_17",
-    name: "Portable Bluetooth Speaker",
-    price: 59,
-    color: "Teal",
-    size: "Mini",
-    image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=400&q=80",
-    category: "Electronics",
-    tags: ["music", "portable"]
-  },
-  {
-    id: "prod_23",
-    name: "USB-C Fast Charger",
-    price: 25,
-    color: "White",
-    size: "N/A",
-    image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=400&q=80",
-    category: "Gadgets",
-    tags: ["accessory", "power"]
-  },
-
-  // --- Beauty & Makeup ---
-  {
-    id: "prod_24",
-    name: "Velvet Matte Lipstick",
-    price: 28,
-    color: "Ruby Red",
-    size: "3g",
-    image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
-    category: "Beauty",
-    tags: ["makeup", "cosmetics"]
-  },
-  {
-    id: "prod_25",
-    name: "Hydrating Facial Serum",
-    price: 45,
-    color: "Clear",
-    size: "30ml",
-    image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80",
-    category: "Beauty",
-    tags: ["skincare", "wellness"]
-  },
-  {
-    id: "prod_26",
-    name: "Eyeshadow Palette",
-    price: 35,
-    color: "Nude Tones",
-    size: "12 Colors",
-    image: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=400&q=80",
-    category: "Beauty",
-    tags: ["makeup", "artistry"]
-  },
-
-  // --- Grocery ---
-  {
-    id: "prod_27",
-    name: "Organic Arabica Coffee",
-    price: 18,
-    color: "Dark Roast",
-    size: "1lb",
-    image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&w=400&q=80",
-    category: "Grocery",
-    tags: ["beverage", "organic"]
-  },
-  {
-    id: "prod_28",
-    name: "Artisan Dark Chocolate",
-    price: 12,
-    color: "Dark",
-    size: "100g",
-    image: "https://images.unsplash.com/photo-1511381939415-e44015466834?auto=format&fit=crop&w=400&q=80",
-    category: "Grocery",
-    tags: ["sweets", "snack"]
-  },
-  {
-    id: "prod_29",
-    name: "Extra Virgin Olive Oil",
-    price: 22,
-    color: "Gold",
-    size: "500ml",
-    image: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=400&q=80",
-    category: "Grocery",
-    tags: ["cooking", "essential"]
-  },
-
-  // --- Stationery ---
-  {
-    id: "prod_30",
-    name: "Leather Bound Journal",
-    price: 30,
-    color: "Brown",
-    size: "A5",
-    image: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=400&q=80",
-    category: "Stationery",
-    tags: ["writing", "office"]
-  },
-  {
-    id: "prod_31",
-    name: "Gold Fountain Pen",
-    price: 55,
-    color: "Gold",
-    size: "Fine Nib",
-    image: "https://images.unsplash.com/photo-1585336261022-680e295ce3fe?auto=format&fit=crop&w=400&q=80",
-    category: "Stationery",
-    tags: ["luxury", "writing"]
-  },
-  {
-    id: "prod_32",
-    name: "Minimalist Desk Organizer",
-    price: 25,
-    color: "Bamboo",
-    size: "Standard",
-    image: "https://images.unsplash.com/photo-1505330622279-bf7d7fc918f4?auto=format&fit=crop&w=400&q=80",
-    category: "Stationery",
-    tags: ["office", "organization"]
-  },
-
-  // --- Kitchenware ---
-  {
-    id: "prod_10",
-    name: "Smart Blender Pro",
-    price: 180,
-    color: "Stainless Steel",
-    size: "2L",
-    image: "https://images.unsplash.com/photo-1570222094114-28a9d8896aca?auto=format&fit=crop&w=400&q=80",
-    category: "Kitchenware",
-    tags: ["home", "appliance", "smart-home"]
-  },
-  {
-    id: "prod_12",
-    name: "Espresso Machine",
-    price: 600,
-    color: "Red",
-    size: "Standard",
-    image: "https://images.unsplash.com/photo-1520981825232-ece5fae45120?auto=format&fit=crop&w=400&q=80",
-    category: "Kitchenware",
-    tags: ["coffee", "luxury", "morning"]
-  },
-
-  // --- Accessories ---
-  {
-    id: "prod_16",
-    name: "Travel Backpack",
-    price: 89,
-    color: "Charcoal",
-    size: "30L",
-    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=400&q=80",
-    category: "Accessories",
-    tags: ["travel", "outdoor"]
-  },
-  {
-    id: "prod_13",
-    name: "Premium Yoga Mat",
-    price: 45,
-    color: "Lavender",
-    size: "Standard",
-    image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?auto=format&fit=crop&w=400&q=80",
-    category: "Fitness",
-    tags: ["health", "workout"]
-  },
-  {
-    id: "prod_14",
-    name: "Smart Thermostat",
-    price: 129,
-    color: "Black",
-    size: "Gen 3",
-    image: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=400&q=80",
-    category: "Smart Home",
-    tags: ["home", "tech", "efficiency"]
-  },
-
-  // --- Toys & Hobbies ---
-  {
-    id: "prod_33",
-    name: "RC Off-Road Car",
-    price: 65,
-    color: "Red/Black",
-    size: "1:18 Scale",
-    image: "https://images.unsplash.com/photo-1594787318286-3d835c1d207f?auto=format&fit=crop&w=400&q=80",
-    category: "Toys",
-    tags: ["kids", "fun", "remote-control"]
-  },
-  {
-    id: "prod_34",
-    name: "Building Blocks Set",
-    price: 45,
-    color: "Multi",
-    size: "500 pcs",
-    image: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=400&q=80",
-    category: "Toys",
-    tags: ["educational", "creative"]
-  },
-
-  // --- Pet Supplies ---
-  {
-    id: "prod_35",
-    name: "Orthopedic Dog Bed",
-    price: 89,
-    color: "Grey",
-    size: "Large",
-    image: "https://images.unsplash.com/photo-1591946614720-90a587da4a36?auto=format&fit=crop&w=400&q=80",
-    category: "Pets",
-    tags: ["dog", "comfort"]
-  },
-  {
-    id: "prod_36",
-    name: "Automatic Cat Feeder",
-    price: 75,
-    color: "White",
-    size: "4L",
-    image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=400&q=80",
-    category: "Pets",
-    tags: ["cat", "smart-home"]
-  },
-
-  // --- Automotive ---
-  {
-    id: "prod_37",
-    name: "Portable Car Vacuum",
-    price: 40,
-    color: "Black",
-    size: "Compact",
-    image: "https://images.unsplash.com/photo-1606813636544-2396b12d52f6?auto=format&fit=crop&w=400&q=80",
-    category: "Automotive",
-    tags: ["cleaning", "car"]
-  },
-  {
-    id: "prod_38",
-    name: "Car Phone Mount",
-    price: 25,
-    color: "Black",
-    size: "Universal",
-    image: "https://images.unsplash.com/photo-1635770311497-8c38a29ee5b4?auto=format&fit=crop&w=400&q=80",
-    category: "Automotive",
-    tags: ["accessory", "convenience"]
-  },
-
-  // --- Books ---
-  {
-    id: "prod_39",
-    name: "Sci-Fi Novel Best Seller",
-    price: 24,
-    color: "N/A",
-    size: "Hardcover",
-    image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=400&q=80",
-    category: "Books",
-    tags: ["fiction", "reading"]
-  },
-  {
-    id: "prod_40",
-    name: "Gourmet Cookbook",
-    price: 35,
-    color: "N/A",
-    size: "Hardcover",
-    image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=400&q=80",
-    category: "Books",
-    tags: ["cooking", "learning"]
-  },
-
-  // --- Garden & Outdoor ---
-  {
-    id: "prod_41",
-    name: "Ceramic Planter Set",
-    price: 45,
-    color: "Terracotta",
-    size: "Set of 3",
-    image: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=400&q=80",
-    category: "Garden",
-    tags: ["plants", "decor"]
-  },
-  {
-    id: "prod_42",
-    name: "Garden Tool Kit",
-    price: 30,
-    color: "Green",
-    size: "Standard",
-    image: "https://images.unsplash.com/photo-1617576683096-00fc8eecb3af?auto=format&fit=crop&w=400&q=80",
-    category: "Garden",
-    tags: ["tools", "outdoor"]
-  }
-];
-
-export const MOCK_CART: CartItem[] = [];
-
-export const MOCK_USERS: User[] = [
-  {
-    id: "usr_1",
-    email: "user@demo.com",
-    name: "Alex Doe",
-    passwordHash: "123456", 
-    preferences: ["sustainable", "tech", "minimalist"],
-    wishlist: []
-  }
-];
-
-export const INITIAL_ORDERS: Order[] = [
-  {
-    orderId: "ORD-7782-X",
-    userId: "usr_1",
-    customerName: "Alex Doe",
-    date: "2023-10-25",
-    status: OrderStatus.DELIVERED,
-    eligibleForReturn: true,
-    items: [ ALL_PRODUCTS[0], ALL_PRODUCTS[2] ] // Hoodie, Scarf
-  },
-  {
-    orderId: "ORD-9921-Y",
-    userId: "usr_1",
-    customerName: "Alex Doe",
-    date: "2023-09-10",
-    status: OrderStatus.DELIVERED,
-    eligibleForReturn: false, // Too old
-    items: [ ALL_PRODUCTS[5] ] 
-  },
-  {
-    orderId: "ORD-3345-Z",
-    userId: "usr_1",
-    customerName: "Alex Doe",
-    date: "2023-10-28",
-    status: OrderStatus.DELIVERED,
-    eligibleForReturn: true,
-    items: [ ALL_PRODUCTS[10] ] // Mini Drone (Updated index due to inserts, mapping by ID below)
-  },
-  {
-    orderId: "ORD-1122-A",
-    userId: "usr_1",
-    customerName: "Alex Doe",
-    date: "2023-11-05",
-    status: OrderStatus.RETURN_INITIATED, 
-    eligibleForReturn: false,
-    items: [ ALL_PRODUCTS[8] ] // Headphones
-  },
-  {
-    orderId: "ORD-6673-M",
-    userId: "usr_1",
-    customerName: "Alex Doe",
-    date: "2024-01-10",
-    status: OrderStatus.DELIVERED,
-    eligibleForReturn: true,
-    items: [ ALL_PRODUCTS[19], ALL_PRODUCTS[21] ] 
-  }
-];
-
-// Re-map initial orders to use the exact objects from the new ALL_PRODUCTS array to avoid index confusion
-// Helper to find prod
-const findProd = (id: string) => ALL_PRODUCTS.find(p => p.id === id) || ALL_PRODUCTS[0];
-
-INITIAL_ORDERS.forEach(order => {
-    // Just ensuring items exist, in a real app these would be IDs
-    if (!order.items || order.items.length === 0) order.items = [ALL_PRODUCTS[0]];
-});
-// Hardcoding a few specific ones for the demo data
-INITIAL_ORDERS[0].items = [findProd("prod_1"), findProd("prod_8")];
-INITIAL_ORDERS[1].items = [findProd("prod_4")];
-INITIAL_ORDERS[2].items = [findProd("prod_9")];
-INITIAL_ORDERS[3].items = [findProd("prod_2")];
-INITIAL_ORDERS[4].items = [findProd("prod_16"), findProd("prod_14")];
-
+import { Product, ReturnReason } from './types';
 
 export const RETURN_REASONS = [
-  "Sizing or fit issues",
-  "Damaged or defective item",
-  "Did not meet expectations",
-  "Changed mind or impulse purchase",
-  "Incorrect order",
-  "Delivery delays",
-  "Unwanted gifts",
-  "Misleading product information"
+  ReturnReason.DAMAGED_SHIPPING,
+  ReturnReason.DEFECTIVE_SCREEN,
+  ReturnReason.NOT_WORKING,
+  ReturnReason.WRONG_ITEM,
+  ReturnReason.BETTER_PRICE,
+  ReturnReason.NO_LONGER_NEEDED,
+  ReturnReason.MISSING_PARTS,
+  ReturnReason.QUALITY_ISSUES,
+  ReturnReason.SIZE_FIT,
+  ReturnReason.ARRIVED_LATE,
 ];
 
-export const RETURN_POLICIES = [
-  { condition: "damage", window: 30, fee: 0, action: "Refund or Exchange" },
-  { condition: "wrong_size", window: 30, fee: 0, action: "Exchange Only" },
-  { condition: "remorse", window: 14, fee: 10, action: "Refund" }, 
-  { condition: "technical_fault", window: 60, fee: 0, action: "Replacement" }
+export const CATEGORIES = [
+    'All', 
+    'Electronics', 
+    'Clothes', 
+    'Shoes', 
+    'Fashion', 
+    'Grocery', 
+    'Wearables', 
+    'Audio', 
+    'Home Office', 
+    'Gaming'
 ];
 
-export const KNOWLEDGE_BASE_ARTICLES = [
-  { id: "kb_1", title: "Recycling Program", content: "We offer a free recycling program for all electronics. Request a shipping label from support." },
-  { id: "kb_2", title: "Serial Number Location", content: "For headphones, the serial number is located on the inside of the left ear cup. For Blenders, check the bottom base." },
-  { id: "kb_3", title: "International Returns", content: "International returns take 14-20 business days to process and may incur a $15 handling fee." },
-  { id: "kb_4", title: "Technical Troubleshooting - Screens", content: "If a screen is flickering, please provide a video. This is often a connector issue." }
+export const MOCK_PRODUCTS: Product[] = [
+  // ELECTRONICS
+  {
+    id: 'p1',
+    name: 'Quantum X1 Laptop',
+    price: 1299.99,
+    category: 'Electronics',
+    image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&auto=format&fit=crop&q=60',
+    description: 'High-performance laptop with OLED display and AI-core processor.',
+    purchasedDate: '2023-10-15',
+    orderId: 'ORD-7782-X1'
+  },
+  {
+    id: 'e2',
+    name: 'PixelPad Pro Tablet',
+    price: 899.00,
+    category: 'Electronics',
+    image: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=800&auto=format&fit=crop&q=60',
+    description: '12.9-inch Liquid Retina display with M2 chip.',
+  },
+  {
+    id: 'e3',
+    name: 'SkyView 4K Drone',
+    price: 749.50,
+    category: 'Electronics',
+    image: 'https://images.unsplash.com/photo-1507582020474-9a35b7d450d7?w=800&auto=format&fit=crop&q=60',
+    description: 'Foldable drone with 3-axis gimbal and 4K camera.',
+  },
+  {
+    id: 'e4',
+    name: 'Smart Home Hub',
+    price: 129.00,
+    category: 'Electronics',
+    image: 'https://images.unsplash.com/photo-1558002038-1091a1661116?w=800&auto=format&fit=crop&q=60',
+    description: 'Voice-controlled smart hub for home automation.',
+  },
+
+  // WEARABLES
+  {
+    id: 'p2',
+    name: 'Nebula Smart Watch',
+    price: 299.50,
+    category: 'Wearables',
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=60',
+    description: 'Advanced health tracking, ECG, and solar charging capabilities.',
+    purchasedDate: '2023-11-01',
+    orderId: 'ORD-9921-NW'
+  },
+  {
+    id: 'w2',
+    name: 'Vitality Fitness Band',
+    price: 49.99,
+    category: 'Wearables',
+    image: 'https://images.unsplash.com/photo-1576243345690-4e4b79b63288?w=800&auto=format&fit=crop&q=60',
+    description: 'Waterproof tracker with heart rate and sleep monitoring.',
+  },
+  {
+    id: 'w3',
+    name: 'VR Headset Pro',
+    price: 399.00,
+    category: 'Wearables',
+    image: 'https://images.unsplash.com/photo-1622979135225-d2ba269fb1bd?w=800&auto=format&fit=crop&q=60',
+    description: 'Immersive virtual reality headset with 6DOF tracking.',
+  },
+
+  // AUDIO
+  {
+    id: 'p3',
+    name: 'Sonic Boom Headphones',
+    price: 199.00,
+    category: 'Audio',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=60',
+    description: 'Active noise cancelling over-ear headphones with 40h battery.',
+    purchasedDate: '2023-11-20',
+    orderId: 'ORD-3321-SB'
+  },
+  {
+    id: 'a2',
+    name: 'PodPro Wireless Earbuds',
+    price: 159.00,
+    category: 'Audio',
+    image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&auto=format&fit=crop&q=60',
+    description: 'True wireless earbuds with spatial audio and transparency mode.',
+  },
+  {
+    id: 'a3',
+    name: 'Vintage Turntable',
+    price: 249.00,
+    category: 'Audio',
+    image: 'https://images.unsplash.com/photo-1614726365723-498aa46ebc68?w=800&auto=format&fit=crop&q=60',
+    description: 'Belt-drive bluetooth turntable with built-in preamp.',
+  },
+
+  // CLOTHES
+  {
+    id: 'p9',
+    name: 'Classic Denim Jacket',
+    price: 89.99,
+    category: 'Clothes',
+    image: 'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=800&auto=format&fit=crop&q=60',
+    description: 'Vintage wash denim jacket with sherpa lining.',
+    purchasedDate: '2024-01-10',
+    orderId: 'ORD-5521-DJ'
+  },
+  {
+    id: 'c2',
+    name: 'Premium Cotton Tee Pack',
+    price: 34.99,
+    category: 'Clothes',
+    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&auto=format&fit=crop&q=60',
+    description: '3-pack of heavyweight organic cotton t-shirts.',
+  },
+  {
+    id: 'c3',
+    name: 'Merino Wool Sweater',
+    price: 120.00,
+    category: 'Clothes',
+    image: 'https://images.unsplash.com/photo-1620799140408-ed5341cd2431?w=800&auto=format&fit=crop&q=60',
+    description: 'Soft, breathable merino wool sweater in charcoal grey.',
+  },
+  {
+    id: 'c4',
+    name: 'Summer Floral Dress',
+    price: 65.00,
+    category: 'Clothes',
+    image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&auto=format&fit=crop&q=60',
+    description: 'Lightweight floral print midi dress, perfect for summer.',
+  },
+  {
+    id: 'c5',
+    name: 'Urban Hoodie',
+    price: 55.00,
+    category: 'Clothes',
+    image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&auto=format&fit=crop&q=60',
+    description: 'Heavyweight fleece hoodie in matte black.',
+  },
+
+  // SHOES
+  {
+    id: 'p10',
+    name: 'Air Stride Running Shoes',
+    price: 120.00,
+    category: 'Shoes',
+    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=60',
+    description: 'Lightweight performance running shoes with reactive foam.',
+    purchasedDate: '2024-02-01',
+    orderId: 'ORD-8821-RS'
+  },
+  {
+    id: 's2',
+    name: 'Urban High-Tops',
+    price: 95.00,
+    category: 'Shoes',
+    image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=60',
+    description: 'Canvas high-top sneakers with durable rubber sole.',
+  },
+  {
+    id: 's3',
+    name: 'Classic Leather Loafers',
+    price: 150.00,
+    category: 'Shoes',
+    image: 'https://images.unsplash.com/photo-1614252369475-531eba835eb1?w=800&auto=format&fit=crop&q=60',
+    description: 'Handcrafted leather loafers with cushioned insole.',
+  },
+  {
+    id: 's4',
+    name: 'Hiking Boots',
+    price: 180.00,
+    category: 'Shoes',
+    image: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=800&auto=format&fit=crop&q=60',
+    description: 'Waterproof hiking boots with rugged traction.',
+  },
+
+  // FASHION
+  {
+    id: 'p11',
+    name: 'Silk Floral Scarf',
+    price: 45.00,
+    category: 'Fashion',
+    image: 'https://images.unsplash.com/photo-1584030373081-f37b7bb4fa8e?w=800&auto=format&fit=crop&q=60',
+    description: '100% Mulberry silk scarf with hand-painted floral design.',
+  },
+  {
+    id: 'f2',
+    name: 'Aviator Sunglasses',
+    price: 135.00,
+    category: 'Fashion',
+    image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop&q=60',
+    description: 'Classic aviator style with polarized lenses and gold frame.',
+  },
+  {
+    id: 'f3',
+    name: 'Leather Crossbody Bag',
+    price: 210.00,
+    category: 'Fashion',
+    image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=60',
+    description: 'Genuine leather bag with adjustable strap and multiple compartments.',
+  },
+  {
+    id: 'f4',
+    name: 'Minimalist Watch',
+    price: 120.00,
+    category: 'Fashion',
+    image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=800&auto=format&fit=crop&q=60',
+    description: 'Analog watch with rose gold case and leather strap.',
+  },
+
+  // GROCERY
+  {
+    id: 'p12',
+    name: 'Organic Green Tea Pack',
+    price: 24.99,
+    category: 'Grocery',
+    image: 'https://images.unsplash.com/photo-1627435601361-ec25f5b1d0e5?w=800&auto=format&fit=crop&q=60',
+    description: 'Premium organic matcha green tea powder, 500g.',
+  },
+  {
+    id: 'g2',
+    name: 'Artisan Coffee Beans',
+    price: 18.50,
+    category: 'Grocery',
+    image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=800&auto=format&fit=crop&q=60',
+    description: 'Single-origin Arabica coffee beans, medium roast.',
+  },
+  {
+    id: 'g3',
+    name: 'Gourmet Dark Chocolate',
+    price: 12.99,
+    category: 'Grocery',
+    image: 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=800&auto=format&fit=crop&q=60',
+    description: '85% cocoa dark chocolate bar with sea salt.',
+  },
+  {
+    id: 'g4',
+    name: 'Extra Virgin Olive Oil',
+    price: 22.00,
+    category: 'Grocery',
+    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd3925?w=800&auto=format&fit=crop&q=60',
+    description: 'Cold-pressed extra virgin olive oil from Italy.',
+  },
+  {
+    id: 'g5',
+    name: 'Organic Granola',
+    price: 8.99,
+    category: 'Grocery',
+    image: 'https://images.unsplash.com/photo-1517093729634-686c528d44ce?w=800&auto=format&fit=crop&q=60',
+    description: 'Honey almond granola with dried fruits.',
+  },
+
+  // HOME OFFICE
+  {
+    id: 'p4',
+    name: 'Vision Pro 4K Monitor',
+    price: 450.00,
+    category: 'Home Office',
+    image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&auto=format&fit=crop&q=60',
+    description: '32-inch 4K IPS monitor with color accuracy for creatives.',
+  },
+  {
+    id: 'p5',
+    name: 'CyberStream Webcam',
+    price: 129.00,
+    category: 'Home Office',
+    image: 'https://images.unsplash.com/photo-1590637687834-3112328db942?w=800&auto=format&fit=crop&q=60',
+    description: '4K webcam with AI tracking and ring light.',
+  },
+  {
+    id: 'h3',
+    name: 'ErgoMesh Office Chair',
+    price: 349.00,
+    category: 'Home Office',
+    image: 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=800&auto=format&fit=crop&q=60',
+    description: 'Fully adjustable ergonomic mesh chair with lumbar support.',
+  },
+
+  // GAMING
+  {
+    id: 'p6',
+    name: 'Velocity Gaming Mouse',
+    price: 79.99,
+    category: 'Gaming',
+    image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&auto=format&fit=crop&q=60',
+    description: 'Ultra-lightweight gaming mouse with 25K DPI sensor.',
+  },
+  {
+    id: 'ga2',
+    name: 'Mechanical RGB Keyboard',
+    price: 129.99,
+    category: 'Gaming',
+    image: 'https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=800&auto=format&fit=crop&q=60',
+    description: 'Tactile mechanical switches with per-key RGB lighting.',
+  },
+  {
+    id: 'ga3',
+    name: 'Console Controller',
+    price: 59.99,
+    category: 'Gaming',
+    image: 'https://images.unsplash.com/photo-1592840496011-8b3412a1331c?w=800&auto=format&fit=crop&q=60',
+    description: 'Wireless controller with haptic feedback.',
+  }
 ];
+
+export const COMPANY_POLICY_TEXT = `
+RETURN POLICY DATABASE (Simulated Vector Store):
+
+1. BROKEN SCREENS: 
+   - If the screen crack point of impact suggests a drop (spiderweb from corner), return is DENIED (User Damage).
+   - If the screen has a single hairline crack or internal bleeding without glass damage, return is APPROVED (Manufacturing Defect).
+
+2. WATER DAMAGE:
+   - Any signs of liquid contact (corrosion, pink indicators) result in immediate DENIAL.
+
+3. ACCESSORIES:
+   - Missing accessories will result in a 20% restocking fee deduction from the refund.
+
+4. TIMEFRAME:
+   - Returns must be initiated within 30 days of purchase.
+   
+5. CONDITION:
+   - Item must be in "Like New" condition unless claiming damage on arrival.
+   
+6. SHOES & CLOTHING:
+   - Must be unworn with original tags attached.
+   - Worn soles on shoes are grounds for denial unless a structural defect is present (sole separation).
+`;
