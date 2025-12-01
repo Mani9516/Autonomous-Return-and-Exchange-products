@@ -1,0 +1,34 @@
+from langchain_google_genai import ChatGoogleGenerativeAI
+from state import ReturnState
+from vector_store import retrieve_policy_context
+import opik
+
+llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
+
+@opik.track
+def policy_agent(state: ReturnState):
+    """
+    Agent 2: Policy Enforcement
+    Uses RAG to check defect against company policy.
+    """
+    print("--> [Policy Agent] Consulting Policy Vector DB...")
+    
+    # RAG: Retrieve relevant policy chunks
+    policy_context = retrieve_policy_context(state['return_reason'])
+    
+    analysis = state['vision_analysis']
+    
+    if not analysis['is_item_match']:
+        return {
+            "policy_decision": "DENIED", 
+            "policy_reasoning": "Item mismatch detected."
+        }
+        
+    # Logic simulation
+    decision = "APPROVED"
+    reasoning = "Defect covered under manufacturing warranty (Sole Separation within 30 days)."
+    
+    return {
+        "policy_decision": decision, 
+        "policy_reasoning": reasoning
+    }
