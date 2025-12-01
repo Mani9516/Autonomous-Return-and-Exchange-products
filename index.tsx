@@ -8,6 +8,8 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
+
+// StrictMode removed per user request for this specific build
 root.render(
-    <App />
+  <App />
 );
