@@ -9,7 +9,7 @@ if (!rootElement) {
 
 const root = ReactDOM.createRoot(rootElement);
 
-// StrictMode removed per user request for this specific build
+// StrictMode is intentionally removed for this build to prevent double-invocation during testing
 root.render(
   <App />
 );
