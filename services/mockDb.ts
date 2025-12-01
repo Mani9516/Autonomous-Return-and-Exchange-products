@@ -5,8 +5,8 @@ const NETWORK_DELAY = 600;
 
 class MockDatabaseService {
   private STORAGE_KEYS = {
-    USERS: 'autoreturn_sqlite_users_v3',
-    ORDERS: 'autoreturn_sqlite_orders_v3',
+    USERS: 'autoreturn_sqlite_users_v4',
+    ORDERS: 'autoreturn_sqlite_orders_v4',
     SESSION: 'autoreturn_session_id'
   };
 

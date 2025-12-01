@@ -1,3 +1,5 @@
+
+
 import { GoogleGenAI, Type, FunctionDeclaration, Tool, Content, Part } from "@google/genai";
 
 // --- Tool Definitions ---
@@ -36,7 +38,7 @@ const getOrderTool: FunctionDeclaration = {
 
 const processReturnTool: FunctionDeclaration = {
   name: "processReturn",
-  description: "Executes a return transaction in the database (FastAPI Backend).",
+  description: "Resolution Agent: Executes a return transaction in the database (FastAPI Backend). ONLY call this after the user has confirmed specific details about the issue.",
   parameters: {
     type: Type.OBJECT,
     properties: {
@@ -50,7 +52,7 @@ const processReturnTool: FunctionDeclaration = {
 
 const processExchangeTool: FunctionDeclaration = {
   name: "processExchange",
-  description: "Executes an exchange in the database.",
+  description: "Resolution Agent: Executes an exchange in the database.",
   parameters: {
     type: Type.OBJECT,
     properties: {
@@ -64,7 +66,7 @@ const processExchangeTool: FunctionDeclaration = {
 // Vision Agent (Python Backend - YOLOv5)
 const runPythonVisionAnalysisTool: FunctionDeclaration = {
   name: "runPythonVisionAnalysis",
-  description: "Triggers the Python Computer Vision backend using YOLOv5 for object detection and defect localization. REQUIRED for all image/video uploads.",
+  description: "Vision Agent: Triggers the Python Computer Vision backend using YOLOv5. REQUIRED for all image/video uploads.",
   parameters: {
     type: Type.OBJECT,
     properties: {
@@ -79,7 +81,7 @@ const runPythonVisionAnalysisTool: FunctionDeclaration = {
 
 const scanInvoiceTool: FunctionDeclaration = {
   name: "scanInvoice",
-  description: "Uses Python OCR (Tesseract/EasyOCR) to extract Order IDs from invoice images.",
+  description: "Vision Agent: Uses Python OCR to extract Order IDs from invoice images.",
   parameters: {
     type: Type.OBJECT,
     properties: {
@@ -92,7 +94,7 @@ const scanInvoiceTool: FunctionDeclaration = {
 // Policy Agent (ChromaDB)
 const checkPolicyTool: FunctionDeclaration = {
   name: "checkReturnPolicy",
-  description: "Consults the Policy Agent (ChromaDB) for rules.",
+  description: "Policy Agent: Consults the Policy Engine (ChromaDB) for rules.",
   parameters: {
     type: Type.OBJECT,
     properties: {
@@ -105,7 +107,7 @@ const checkPolicyTool: FunctionDeclaration = {
 
 const searchKnowledgeBaseTool: FunctionDeclaration = {
   name: "searchKnowledgeBase",
-  description: "Semantic search (ChromaDB) for complex questions (recycling, manuals, etc.).",
+  description: "Policy Agent: Semantic search (ChromaDB) for complex questions.",
   parameters: {
     type: Type.OBJECT,
     properties: {
@@ -118,7 +120,7 @@ const searchKnowledgeBaseTool: FunctionDeclaration = {
 // Resolution Agent
 const determineResolutionTool: FunctionDeclaration = {
   name: "determineResolution",
-  description: "Calculates the final decision.",
+  description: "Resolution Agent: Calculates the final decision based on Policy outcomes.",
   parameters: {
     type: Type.OBJECT,
     properties: {
@@ -160,46 +162,58 @@ export const tools: Tool[] = [{
 }];
 
 export const systemInstruction = `
-You are the **AutoReturn Intelligent Orchestrator**, running on a **LangGraph** architecture with a **Python/FastAPI** backend and **YOLOv5** vision.
+You are the **AutoReturn Intelligent System**, a multi-agent orchestrator running on a Python/FastAPI backend.
+You coordinate 4 specialized agents defined in \`backend/agents.py\`:
 
-**CRITICAL PROTOCOL:**
-1.  **NLP FIRST**: For ANY user message, your FIRST action MUST be to call \`performNlpAnalysis(text)\`. 
-    *   Use the output (Sentiment, Intent) to guide your tone and next steps.
+**1. VISION AGENT (YOLOv5)**
+   - **Role**: Analyze visual evidence (images/videos).
+   - **Tool**: \`runPythonVisionAnalysis\`
+   - **Trigger**: Whenever the user uploads media or claims "damage", "defect", or "broken".
+   - **Protocol**: You MUST call the tool to get the YOLOv5 detection results. 
+   - **CRITICAL**: After receiving the vision result, **DO NOT** process the return immediately. You MUST first acknowledge the finding (e.g., "I see the screen is cracked") and ask clarifying questions (e.g., "Was the shipping box also damaged?").
 
-**WORKFLOWS:**
+**2. POLICY AGENT (ChromaDB)**
+   - **Role**: Consult the rules engine and knowledge base.
+   - **Tools**: \`checkReturnPolicy\`, \`searchKnowledgeBase\`
+   - **Trigger**: After the Vision Agent provides findings and you have discussed it with the user.
+   - **Protocol**: Verify if the defect/reason is eligible for return under the current time window.
 
-1.  **SMART ORDER LOOKUP:**
-    *   If NLP Intent is 'return_item' or 'exchange_item' and no Order ID is known, call \`getUserOrders(userId)\`.
-    *   **Logic**: Look at the list. If you find a matching item, use its ID automatically.
+**3. RESOLUTION AGENT (Logic)**
+   - **Role**: Make the final decision and execute transactions.
+   - **Tools**: \`determineResolution\`, \`processReturn\`, \`processExchange\`
+   - **Trigger**: Once Policy Agent confirms eligibility AND the user has answered your diagnostic questions.
+   - **Protocol**: If eligible, execute the return/exchange. If not, explain why using the Policy data.
 
-2.  **VISION AGENT (YOLOv5 Backend):**
-    *   **Images/Videos**: You possess Multimodal capabilities to SEE. However, you MUST formalize your findings by calling the Python backend tool \`runPythonVisionAnalysis\`.
-    *   **Protocol**:
-        1.  Analyze the image/video visually yourself first.
-        2.  Call \`runPythonVisionAnalysis\` to trigger the **YOLOv5** inference engine. Pass your visual findings as arguments (e.g., defectClass='scratched_lens', severityScore=0.95).
-        3.  The backend will return bounding box data simulating a YOLO detection.
-    *   **Constraint**: If a user claims "damage" or "defect", you **MUST** request media proof (Image for physical, Video for technical) if not provided.
+**4. COMMUNICATION AGENT (LLM)**
+   - **Role**: Interact with the user.
+   - **Behavior**: You ARE this agent. Use the outputs from the other 3 agents to formulate professional, empathetic responses.
 
-3.  **STANDARD RETURN REASONS**:
-    *   The user may provide one of the following standard reasons:
-        *   Sizing or fit issues
-        *   Damaged or defective item
-        *   Did not meet expectations
-        *   Changed mind or impulse purchase
-        *   Incorrect order
-        *   Delivery delays
-        *   Unwanted gifts
-        *   Misleading product information
-    *   Use these categories when processing policies. For "Damaged/Defective", always ask for images.
+**STANDARD RETURN REASONS:**
+   - Sizing or fit issues
+   - Damaged or defective item
+   - Did not meet expectations
+   - Changed mind or impulse purchase
+   - Incorrect order
+   - Delivery delays
+   - Unwanted gifts
+   - Misleading product information
 
-**LANGGRAPH PIPELINE:**
-*   **Input** -> **NLP Node (spaCy)** -> **Router**
-*   **Router** -> (Defect) -> **Vision (YOLOv5)** -> **Policy** -> **Resolution**.
-*   **Router** -> (Question) -> **Knowledge Base (ChromaDB)**.
-*   **Router** -> (Recommendation) -> **RecSys**.
+**CRITICAL CONVERSATION PROTOCOL:**
+   - **Step 1: NLP Analysis**: Always start with \`performNlpAnalysis\`.
+   - **Step 2: DIAGNOSTIC PHASE (MANDATORY)**: 
+     - **DO NOT** process a return or offer a refund immediately when the user initiates a request.
+     - **YOU MUST ASK** at least one clarifying diagnostic question.
+     - **Examples**:
+       - "I see you have sizing issues. Was it too loose, too tight, or was the cut uncomfortable?"
+       - "I'm sorry to hear about the damage. Could you describe exactly what is broken? Is it cosmetic or a functional failure?"
+       - "For the 'Not as expected' return, what specifically was different from the description?"
+   - **Step 3: Evidence**: If the user claims damage, you **MUST** ask for a photo before proceeding.
+   - **Step 4: Vision Verification**: After \`runPythonVisionAnalysis\`, confirm the detected defect with the user (e.g., "The analysis detected a cracked screen. Is this correct?").
+   - **Step 5: Resolution**: Only call \`processReturn\` after you have gathered this specific feedback and the user confirms they want to proceed.
 
-**TONE:**
-Professional, efficient, empathetic.
+**General Rules:**
+   - Do not ask for Order ID if you can find it using \`getUserOrders\`.
+   - Be concise and professional.
 `;
 
 export class GeminiAgent {
@@ -257,7 +271,10 @@ export class GeminiAgent {
            console.log(`[LangGraph Node] Executing: ${call.name}`, call.args);
            
            try {
-             const result = await toolExecutor(call.name, call.args);
+             // Handle potential missing args or nulls gracefully
+             const args = call.args || {};
+             const result = await toolExecutor(call.name, args);
+             
              functionResponses.push({
                id: call.id,
                name: call.name,
@@ -265,10 +282,11 @@ export class GeminiAgent {
              });
            } catch (toolError) {
              console.error(`Tool Execution Error (${call.name}):`, toolError);
+             const errStr = toolError instanceof Error ? toolError.message : String(toolError);
              functionResponses.push({
                id: call.id,
                name: call.name,
-               response: { error: `Backend Tool Error: ${toolError}` }
+               response: { error: `Backend Tool Error: ${errStr}` }
              });
            }
         }
@@ -293,7 +311,8 @@ export class GeminiAgent {
 
     } catch (error: any) {
       console.error("Gemini Error:", error);
-      if (error.message?.includes("API_KEY")) {
+      const errStr = String(error?.message || error);
+      if (errStr.includes("API_KEY")) {
         return "Backend Error: Invalid or missing API Key. Please check configuration.";
       }
       return "Backend Error: Orchestrator unreachable. Service may be down or rate-limited.";

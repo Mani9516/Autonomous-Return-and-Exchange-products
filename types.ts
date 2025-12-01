@@ -57,6 +57,12 @@ export interface ChatMessage {
   isToolOutput?: boolean;
   toolName?: string;
   recommendations?: Product[];
+  analysisResult?: {
+    status: string;
+    detected_objects: string[];
+    confidence: number;
+    analysis_time_ms: number;
+  };
 }
 
 export interface LogEntry {
