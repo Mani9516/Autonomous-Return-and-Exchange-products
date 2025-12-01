@@ -1,81 +1,61 @@
-export enum OrderStatus {
-  DELIVERED = 'Delivered',
-  RETURN_INITIATED = 'Return Initiated',
-  RETURNED = 'Returned',
-  EXCHANGE_INITIATED = 'Exchange Initiated',
-  EXCHANGED = 'Exchanged'
-}
-
 export interface Product {
   id: string;
   name: string;
   price: number;
-  color: string;
-  size: string;
-  image: string;
   category: string;
-  tags: string[];
+  image: string;
+  description: string;
+  purchasedDate?: string;
+  orderId?: string;
 }
 
-export interface CartItem {
-  id: string;
-  product: Product;
+export interface CartItem extends Product {
   quantity: number;
-}
-
-export interface Order {
-  orderId: string;
-  userId: string; // Added for smart lookup
-  customerName: string;
-  date: string;
-  status: OrderStatus;
-  items: Product[];
-  eligibleForReturn: boolean;
 }
 
 export interface User {
   id: string;
-  email: string;
   name: string;
+  email: string;
   passwordHash: string; // Simulated
-  preferences?: string[];
-  wishlist?: string[]; // List of Product IDs
+  role: 'user' | 'admin';
 }
 
-export interface Attachment {
-  type: 'image' | 'video';
-  url: string; // Object URL for preview
-  base64: string; // For API
-  mimeType: string;
+export enum ReturnReason {
+  DAMAGED_SHIPPING = "Damaged during shipping",
+  DEFECTIVE_SCREEN = "Screen is cracked/defective",
+  NOT_WORKING = "Item does not turn on",
+  WRONG_ITEM = "Received wrong item",
+  BETTER_PRICE = "Found better price elsewhere",
+  NO_LONGER_NEEDED = "No longer needed",
+  MISSING_PARTS = "Missing parts or accessories",
+  QUALITY_ISSUES = "Performance/Quality not as expected",
+  SIZE_FIT = "Item does not fit (Size/Dimensions)",
+  ARRIVED_LATE = "Arrived too late"
+}
+
+export interface AgentLog {
+  id: string;
+  agentName: 'Vision Agent' | 'Policy Agent' | 'Resolution Agent' | 'Communication Agent' | 'SQL Database' | 'Auth Service' | 'Support Agent';
+  status: 'processing' | 'success' | 'failure';
+  message: string;
+  details?: string; // JSON string or detailed text
+  timestamp: number;
+}
+
+export interface ReturnCase {
+  id: string;
+  productId: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected' | 'manual_review';
+  imageUrl?: string;
+  analysisReport?: string;
+  resolutionNote?: string;
+  refundAmount?: number;
 }
 
 export interface ChatMessage {
-  id: string;
-  role: 'user' | 'model' | 'system';
+  role: 'user' | 'model';
   text: string;
-  attachment?: Attachment;
-  isToolOutput?: boolean;
-  toolName?: string;
-  recommendations?: Product[];
-  analysisResult?: {
-    status: string;
-    detected_objects: string[];
-    confidence: number;
-    analysis_time_ms: number;
-  };
-}
-
-export interface LogEntry {
-  timestamp: string;
-  action: string;
-  details: string;
-  agent: 'Communication' | 'Vision' | 'Policy' | 'Resolution' | 'System' | 'Database' | 'NLP';
-  status: 'info' | 'success' | 'warning' | 'error';
-}
-
-export interface NlpState {
-  intent: string;
-  sentiment: 'positive' | 'neutral' | 'negative' | 'frustrated';
-  confidence: number;
-  entities: string[];
+  timestamp: number;
 }
