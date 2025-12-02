@@ -1,55 +1,78 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Activity, ChevronDown, ChevronUp, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { AgentLog } from '../types';
 
-interface LandingPageProps {
-  onGetStarted: () => void;
+interface LogViewerProps { 
+  logs: AgentLog[]; 
+  isProcessing: boolean; 
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => (
-  <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col">
-    <header className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
-      <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-500">
-        AutoReturn AI
-      </div>
-      <button 
-        onClick={onGetStarted}
-        className="px-5 py-2 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium hover:opacity-90 transition-opacity"
-      >
-        Login
-      </button>
-    </header>
+export const LogViewer: React.FC<LogViewerProps> = ({ logs, isProcessing }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const endRef = useRef<HTMLDivElement>(null);
 
-    <main className="flex-1 flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl -z-10" />
+    useEffect(() => {
+        if (logs.length > 0 && isProcessing) {
+            setIsOpen(true);
+        }
+    }, [logs.length, isProcessing]);
 
-      <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 max-w-4xl">
-        Autonomous Returns <br/>
-        <span className="text-blue-600 dark:text-blue-400">Powered by Intelligence</span>
-      </h1>
-      <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mb-10 leading-relaxed">
-        Experience the future of customer service. Our Multi-Agent System handles complex returns, exchanges, and policy checks instantly using Vision, NLP, and Logic.
-      </p>
+    useEffect(() => {
+        if (isOpen && endRef.current) {
+            endRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [logs, isOpen]);
 
-      <button 
-        onClick={onGetStarted}
-        className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white transition-all duration-200 bg-blue-600 rounded-full hover:bg-blue-700 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 shadow-lg shadow-blue-600/30"
-      >
-        Access Portal
-        <svg className="w-5 h-5 ml-2 -mr-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
-      </button>
+    if (logs.length === 0) return null;
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 max-w-5xl w-full text-left">
-        {[
-          { title: "Vision Agent", desc: "Instantly analyzes product damage photos and videos using YOLOv5 & Gemini Vision." },
-          { title: "Policy Engine", desc: "Checks return eligibility against 50+ rules in real-time via ChromaDB." },
-          { title: "Smart Resolution", desc: "Automated approvals for refunds and exchanges without human intervention." }
-        ].map((feat, i) => (
-          <div key={i} className="p-6 rounded-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800">
-            <h3 className="text-lg font-semibold mb-2">{feat.title}</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">{feat.desc}</p>
-          </div>
-        ))}
-      </div>
-    </main>
-  </div>
-);
+    return (
+        <div className="mt-8 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-900 animate-fade-in">
+            <button 
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950/50 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+            >
+                <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    <Activity className="w-4 h-4 text-indigo-500" />
+                    Agent Activity Logs
+                    <span className="ml-2 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs px-2 py-0.5 rounded-full">{logs.length} events</span>
+                </div>
+                {isOpen ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+            </button>
+            
+            {isOpen && (
+                <div className="max-h-80 overflow-y-auto p-4 bg-slate-950 space-y-3 font-mono text-xs">
+                    {logs.map((log) => (
+                        <div key={log.id} className="flex gap-3 group">
+                            <span className="text-slate-600 shrink-0 select-none">
+                                {new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                    <span className={`font-bold ${
+                                        log.agentName === 'Vision Agent' ? 'text-blue-400' :
+                                        log.agentName === 'Policy Agent' ? 'text-purple-400' :
+                                        log.agentName === 'Resolution Agent' ? 'text-emerald-400' :
+                                        log.agentName === 'SQL Database' ? 'text-slate-400' :
+                                        'text-orange-400'
+                                    }`}>
+                                        {log.agentName}
+                                    </span>
+                                    {log.status === 'processing' && <Loader2 className="w-3 h-3 animate-spin text-slate-500" />}
+                                    {log.status === 'success' && <CheckCircle className="w-3 h-3 text-emerald-500" />}
+                                    {log.status === 'failure' && <XCircle className="w-3 h-3 text-red-500" />}
+                                </div>
+                                <p className="text-slate-300 break-words">{log.message}</p>
+                                {log.details && (
+                                    <div className="mt-2 p-2 rounded bg-slate-900 border border-slate-800 text-slate-400 whitespace-pre-wrap overflow-x-auto">
+                                        {log.details}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                    <div ref={endRef} />
+                </div>
+            )}
+        </div>
+    );
+};
