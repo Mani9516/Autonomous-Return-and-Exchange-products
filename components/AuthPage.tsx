@@ -1,304 +1,199 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Mail, Cpu, Lock, Check, AlertCircle, Loader2, ArrowRight, Sun, Moon } from 'lucide-react';
 import { User } from '../types';
-import { db } from '../services/mockDb';
+import { loginUser, registerUser } from '../services/dbService';
 
-type AuthView = 'login' | 'register' | 'forgot_email' | 'forgot_verify';
-
-interface AuthPageProps {
-  onAuthSuccess: (user: User) => void;
+interface AuthViewProps { 
+  initialMode?: 'login'|'register';
+  onSuccess: (user: User) => void;
+  onCancel: () => void;
+  toggleDarkMode: () => void;
+  darkMode: boolean;
 }
 
-export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
-  const [view, setView] = useState<AuthView>('login');
+export const AuthView: React.FC<AuthViewProps> = ({ 
+  initialMode = 'login',
+  onSuccess,
+  onCancel,
+  toggleDarkMode,
+  darkMode
+}) => {
+  const [mode, setMode] = useState<'login'|'register'|'forgot'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [resetCode, setResetCode] = useState('');
-  const [enteredCode, setEnteredCode] = useState('');
-  
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
-
-  // Clear errors when view changes
-  useEffect(() => {
-    setError('');
-    setSuccessMsg('');
-    setPassword('');
-  }, [view]);
-
-  const toggleTheme = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-    if (newMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
+  const [error, setError] = useState<string | null>(null);
+  const [resetSent, setResetSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccessMsg('');
     setLoading(true);
+    setError(null);
 
     try {
-        if (view === 'login') {
-            const res = await db.login(email, password);
-            if (res.error) setError(res.error);
-            else if (res.user) {
-                if (rememberMe) db.setSession(res.user.id);
-                onAuthSuccess(res.user);
-            }
-        } else if (view === 'register') {
-            const res = await db.register(email, password);
-            if (res.error) setError(res.error);
-            else if (res.user) {
-                if (rememberMe) db.setSession(res.user.id);
-                onAuthSuccess(res.user);
-            }
-        } else if (view === 'forgot_email') {
-            const exists = await db.verifyEmail(email);
-            if (!exists) {
-                setError("No account found with this email. (Hint: Try 'user@demo.com')");
-            } else {
-                const code = Math.floor(1000 + Math.random() * 9000).toString();
-                setResetCode(code);
-                alert(`DEMO: Your password reset code is ${code}`);
-                setSuccessMsg(`Code sent to ${email}`);
-                setTimeout(() => {
-                    setView('forgot_verify');
-                    setSuccessMsg('');
-                }, 1000);
-            }
-        } else if (view === 'forgot_verify') {
-            if (enteredCode !== resetCode) {
-                setError("Invalid verification code. Please try again.");
-            } else {
-                const updated = await db.updatePassword(email, password);
-                if (updated) {
-                    setSuccessMsg("Password updated successfully! Please sign in.");
-                    setTimeout(() => setView('login'), 2000);
-                } else {
-                    setError("Failed to update password. Try again.");
-                }
-            }
-        }
-    } catch (err) {
-        setError("Connection failed. Please try again.");
+      if (mode === 'forgot') {
+          await new Promise(resolve => setTimeout(resolve, 1500)); 
+          setResetSent(true);
+          setLoading(false);
+          return;
+      }
+
+      const u = mode === 'register' 
+        ? await registerUser(name, email, password)
+        : await loginUser(email, password);
+      
+      onSuccess(u);
+    } catch (err: any) {
+      if (mode === 'login') {
+           setError('Wrong credentials');
+      } else {
+           setError(err.message || 'Authentication failed');
+      }
     } finally {
-        setLoading(false);
+      if (mode !== 'forgot') setLoading(false);
     }
   };
 
-  const resendCode = async () => {
-      const code = Math.floor(1000 + Math.random() * 9000).toString();
-      setResetCode(code);
-      alert(`DEMO: Your new password reset code is ${code}`);
-      setSuccessMsg("New code sent!");
-      setTimeout(() => setSuccessMsg(""), 3000);
-  };
+  const passwordRequirements = [
+      { text: "At least 8 characters", met: password.length >= 8 },
+      { text: "Contains a number", met: /\d/.test(password) },
+      { text: "Contains a special character", met: /[!@#$%^&*]/.test(password) },
+  ];
 
-  const handleFillDemo = () => {
-      setEmail("user@demo.com");
-      setPassword("123456");
-  };
-
-  const getTitle = () => {
-      switch(view) {
-          case 'login': return 'Welcome Back';
-          case 'register': return 'Create Account';
-          case 'forgot_email': return 'Reset Password';
-          case 'forgot_verify': return 'Verify & Set Password';
-      }
-  };
-
-  const getSubtitle = () => {
-      switch(view) {
-          case 'login': return 'Sign in to manage your returns';
-          case 'register': return 'Register for the portal';
-          case 'forgot_email': return 'Enter your email to receive a code';
-          case 'forgot_verify': return 'Enter the code sent to your email';
-      }
-  };
+  if (mode === 'forgot' && resetSent) {
+      return (
+          <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+              <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8 border border-slate-100 dark:border-slate-800 text-center animate-fade-in-up">
+                  <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 dark:text-green-400">
+                      <Mail className="w-8 h-8" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Check your inbox</h2>
+                  <p className="text-slate-500 dark:text-slate-400 mb-8">We've sent a password reset link to <strong>{email}</strong></p>
+                  <button 
+                      onClick={() => { setResetSent(false); setMode('login'); }}
+                      className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+                  >
+                      Back to Login
+                  </button>
+                  <p className="mt-4 text-xs text-slate-400">
+                      Didn't receive it? <button onClick={() => setResetSent(false)} className="text-indigo-600 hover:underline">Try again</button>
+                  </p>
+              </div>
+          </div>
+      );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 relative">
-       {/* Theme Toggle for Auth Page */}
-       <div className="absolute top-6 right-6">
-         <button
-            onClick={toggleTheme}
-            className="p-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-         >
-            {isDarkMode ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-            ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-            )}
-         </button>
-      </div>
-
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-8 transition-all">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            {getTitle()}
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 transition-colors duration-300 p-4">
+        <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8 border border-slate-100 dark:border-slate-800 transition-colors duration-300 animate-fade-in">
+          <div className="flex items-center gap-2 mb-8 justify-center cursor-pointer" onClick={onCancel}>
+            <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/30">
+              <Cpu className="text-white w-6 h-6" />
+            </div>
+            <span className="font-bold text-2xl text-slate-800 dark:text-white">AutoResolve</span>
+          </div>
+          
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+              {mode === 'register' ? 'Create Account' : mode === 'forgot' ? 'Reset Password' : 'Welcome Back'}
           </h2>
-          <p className="text-slate-500 dark:text-slate-400">
-            {getSubtitle()}
+          <p className="text-slate-500 dark:text-slate-400 mb-6">
+              {mode === 'forgot' ? 'Enter your email to receive a reset link.' : 'Autonomous Retail Exchange Platform'}
           </p>
-        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          
-          {(view === 'login' || view === 'register' || view === 'forgot_email') && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === 'register' && (
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
-                <input 
-                  type="email"
-                  name="email"
-                  autoComplete="username"
-                  required
-                  className="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg p-3 border focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" placeholder="John Doe" required />
               </div>
-          )}
-
-          {view === 'forgot_verify' && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Verification Code</label>
-                <div className="flex gap-2">
-                    <input 
-                      type="text"
-                      placeholder="0000"
-                      required
-                      maxLength={4}
-                      className="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white tracking-widest text-center text-lg"
-                      value={enteredCode}
-                      onChange={(e) => setEnteredCode(e.target.value)}
-                    />
-                    <button 
-                        type="button" 
-                        onClick={resendCode}
-                        className="px-3 text-sm text-blue-600 hover:text-blue-500 whitespace-nowrap"
-                    >
-                        Resend Code
-                    </button>
-                </div>
-              </div>
-          )}
-
-          {(view === 'login' || view === 'register' || view === 'forgot_verify') && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    {view === 'forgot_verify' ? 'New Password' : 'Password'}
-                </label>
-                <div className="relative">
-                    <input 
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      autoComplete={view === 'login' ? "current-password" : "new-password"}
-                      required
-                      className="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white pr-10"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                    >
-                        {showPassword ? (
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
-                        ) : (
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        )}
-                    </button>
-                </div>
-              </div>
-          )}
-
-          {(view === 'login') && (
-              <div className="flex items-center justify-between text-sm">
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={rememberMe}
-                        onChange={e => setRememberMe(e.target.checked)}
-                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" 
-                      />
-                      <span className="text-slate-600 dark:text-slate-400">Remember me</span>
-                  </label>
-                  <button type="button" onClick={() => setView('forgot_email')} className="text-blue-600 hover:text-blue-500">
-                      Forgot password?
-                  </button>
-              </div>
-          )}
-
-          {error && (
-            <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm">
-              {error}
-            </div>
-          )}
-          
-          {successMsg && (
-            <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-sm">
-              {successMsg}
-            </div>
-          )}
-
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors shadow-lg shadow-blue-600/20 disabled:opacity-50"
-          >
-            {loading ? 'Processing...' : (
-                view === 'login' ? 'Sign In' : 
-                view === 'register' ? 'Create Account' : 
-                view === 'forgot_email' ? 'Send Reset Code' : 'Reset Password'
             )}
-          </button>
-          
-          {view === 'login' && (
-            <button
-                type="button" 
-                onClick={handleFillDemo}
-                className="w-full py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors text-sm"
-            >
-                Fill Demo Credentials
-            </button>
-          )}
-        </form>
+            
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+              <div className="relative">
+                  <Mail className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg pl-10 p-3 border focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" placeholder="user@example.com" required />
+              </div>
+            </div>
 
-        <div className="mt-6 text-center text-sm">
-          {view === 'login' ? (
-              <button 
-                onClick={() => setView('register')}
-                className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
-              >
-                Don't have an account? Sign up
+            {mode !== 'forgot' && (
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
+                    {mode === 'login' && (
+                        <button type="button" onClick={() => setMode('forgot')} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Forgot password?</button>
+                    )}
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
+                  <input 
+                      type="password" 
+                      value={password} 
+                      onChange={e => setPassword(e.target.value)} 
+                      className="w-full border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg pl-10 pr-4 p-3 border focus:ring-2 focus:ring-indigo-500 outline-none transition-colors" 
+                      placeholder="••••••••" 
+                      required 
+                  />
+                </div>
+                
+                {mode === 'register' && password.length > 0 && (
+                    <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg space-y-2">
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Requirements:</p>
+                        {passwordRequirements.map((req, idx) => (
+                            <div key={idx} className="flex items-center gap-2 text-xs">
+                                {req.met ? (
+                                    <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                ) : (
+                                    <div className="w-3.5 h-3.5 rounded-full border border-slate-400 flex items-center justify-center">
+                                        <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
+                                    </div>
+                                )}
+                                <span className={req.met ? "text-emerald-600 dark:text-emerald-400 transition-colors" : "text-slate-500 transition-colors"}>
+                                    {req.text}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+              </div>
+            )}
+
+            {error && (
+              <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 text-sm text-red-600 dark:text-red-400 animate-pulse">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  {error}
+              </div>
+            )}
+
+            <button disabled={loading} className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 mt-2">
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {mode === 'register' ? 'Register Securely' : mode === 'forgot' ? 'Send Reset Link' : 'Sign In'}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center text-sm">
+            {mode === 'register' ? (
+              <p className="text-slate-500 dark:text-slate-400">Already have an account? <button onClick={() => setMode('login')} className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline">Sign in</button></p>
+            ) : mode === 'login' ? (
+              <p className="text-slate-500 dark:text-slate-400">New to AutoResolve? <button onClick={() => setMode('register')} className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline">Create account</button></p>
+            ) : (
+              <button onClick={() => setMode('login')} className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline flex items-center justify-center gap-1 w-full">
+                  <ArrowRight className="w-3 h-3 rotate-180" /> Back to Login
               </button>
-          ) : view === 'register' ? (
+            )}
+          </div>
+          
+          <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
               <button 
-                onClick={() => setView('login')}
-                className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                onClick={toggleDarkMode} 
+                className="w-full py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded flex items-center justify-center gap-2 text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               >
-                Already have an account? Sign in
+                  {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  Switch to {darkMode ? 'Light' : 'Dark'} Mode
               </button>
-          ) : (
-              <button 
-                onClick={() => setView('login')}
-                className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
-              >
-                Back to Sign In
-              </button>
-          )}
+          </div>
         </div>
-      </div>
     </div>
   );
 };
