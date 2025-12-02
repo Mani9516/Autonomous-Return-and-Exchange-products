@@ -1,47 +1,56 @@
 import React from 'react';
-import { Product } from '../types';
-import { ALL_PRODUCTS } from '../constants';
+import { Heart } from 'lucide-react';
+import { MOCK_PRODUCTS } from '../../constants';
+import { Product } from '../../types';
+import { ProductCard } from '../ProductCard';
 
-interface WishlistViewProps {
-  wishlist: string[];
-  toggleWishlist: (product: Product) => void;
-  addToCart: (product: Product) => void;
+interface WishlistTabProps {
+  wishlist: Set<string>;
+  addToCart: (p: Product) => void;
+  toggleWishlist: (id: string) => void;
+  setActiveTab: (t: string) => void;
 }
 
-export const WishlistView: React.FC<WishlistViewProps> = ({ wishlist, toggleWishlist, addToCart }) => {
-    const wishlistItems = ALL_PRODUCTS.filter(p => wishlist.includes(p.id));
+export const WishlistTab: React.FC<WishlistTabProps> = ({ 
+  wishlist, 
+  addToCart, 
+  toggleWishlist, 
+  setActiveTab 
+}) => {
+  const wishlistProducts = MOCK_PRODUCTS.filter(p => wishlist.has(p.id));
+  
+  if (wishlistProducts.length === 0) {
+      return (
+          <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 animate-fade-in max-w-2xl mx-auto">
+              <div className="w-20 h-20 bg-pink-50 dark:bg-pink-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Heart className="w-10 h-10 text-pink-300 dark:text-pink-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Your wishlist is empty</h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-8">Tap the heart on any product to save it for later.</p>
+              <button onClick={() => setActiveTab('catalog')} className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
+                Browse Products
+              </button>
+          </div>
+      );
+  }
 
-    return (
-        <div className="pb-20">
-            {wishlistItems.length === 0 ? (
-                <div className="text-center py-10 text-slate-500">Your wishlist is empty.</div>
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {wishlistItems.map(product => (
-                        <div key={product.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm flex flex-col">
-                            <div className="h-40 overflow-hidden relative">
-                                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                                <button 
-                                  onClick={() => toggleWishlist(product)}
-                                  className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 text-red-500 shadow-sm"
-                                >
-                                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                </button>
-                            </div>
-                            <div className="p-4 flex-1 flex flex-col">
-                                <h4 className="font-semibold text-slate-900 dark:text-white mb-1">{product.name}</h4>
-                                <p className="text-slate-500 text-sm mb-4">${product.price}</p>
-                                <button 
-                                    onClick={() => addToCart(product)}
-                                    className="mt-auto w-full py-2 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
-                                >
-                                    Move to Cart
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
+  return (
+      <div className="animate-fade-in pb-24">
+           <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">My Wishlist</h2>
+              <span className="bg-pink-100 dark:bg-pink-900/50 text-pink-600 dark:text-pink-300 text-xs font-bold px-2.5 py-1 rounded-full">{wishlistProducts.length} items</span>
+           </div>
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {wishlistProducts.map(p => (
+                  <ProductCard 
+                      key={p.id} 
+                      product={p} 
+                      addToCart={() => addToCart(p)}
+                      toggleWishlist={() => toggleWishlist(p.id)}
+                      isInWishlist={true}
+                  />
+              ))}
+          </div>
+      </div>
+  );
 };
