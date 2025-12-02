@@ -1,54 +1,69 @@
 import React from 'react';
-import { ShoppingCart, Heart } from 'lucide-react';
-import { Product } from '../types';
+import { User as UserIcon, Bell, ArrowRight, Settings, CreditCard, LogOut } from 'lucide-react';
+import { User } from '../../types';
 
-interface ProductCardProps { 
-  product: Product; 
-  addToCart: () => void; 
-  toggleWishlist: () => void;
-  isInWishlist: boolean;
+interface ProfileTabProps {
+  user: User | null;
+  onSignOut: () => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ 
-  product, 
-  addToCart, 
-  toggleWishlist, 
-  isInWishlist 
-}) => (
-  <div className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl dark:hover:shadow-indigo-900/10 transition-all duration-300 overflow-hidden flex flex-col h-full hover:-translate-y-1">
-    <div className="relative aspect-[4/3] bg-slate-100 dark:bg-slate-800 overflow-hidden">
-      <img 
-        src={product.image} 
-        alt={product.name} 
-        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-      />
-      <button 
-        onClick={(e) => { e.stopPropagation(); toggleWishlist(); }}
-        className={`absolute top-3 right-3 p-2.5 rounded-full shadow-md transition-all duration-300 ${
-          isInWishlist 
-          ? 'bg-pink-500 text-white scale-110' 
-          : 'bg-white/90 dark:bg-slate-900/90 text-slate-400 hover:text-pink-500 hover:scale-110'
-        }`}
-      >
-        <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-current' : ''}`} />
-      </button>
-    </div>
-    <div className="p-5 flex flex-col flex-grow">
-      <div className="flex justify-between items-start mb-2">
-        <div className="flex-1 mr-2">
-          <p className="text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider mb-1">{product.category}</p>
-          <h3 className="font-bold text-slate-900 dark:text-white text-lg leading-tight mb-1">{product.name}</h3>
-        </div>
-        <span className="font-bold text-slate-900 dark:text-white text-lg shrink-0">${product.price}</span>
+export const ProfileTab: React.FC<ProfileTabProps> = ({ user, onSignOut }) => (
+  <div className="max-w-2xl mx-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm animate-fade-in mb-20">
+      <div className="flex items-center gap-6 mb-8">
+          <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400 border-4 border-white dark:border-slate-800 shadow-lg">
+              <UserIcon className="w-10 h-10" />
+          </div>
+          <div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{user?.name}</h2>
+              <p className="text-slate-500 dark:text-slate-400">{user?.email}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="inline-block px-3 py-0.5 bg-slate-100 dark:bg-slate-800 text-xs font-mono rounded-full text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                    ID: {user?.id}
+                </span>
+                <span className="inline-block px-3 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-xs font-semibold rounded-full text-emerald-600 dark:text-emerald-400">
+                    Verified User
+                </span>
+              </div>
+          </div>
       </div>
-      <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 line-clamp-2 flex-grow">{product.description}</p>
-      <button 
-        onClick={addToCart}
-        className="w-full py-3 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg hover:shadow-indigo-500/20 active:scale-95 flex items-center justify-center gap-2"
-      >
-        <ShoppingCart className="w-4 h-4" />
-        Add to Cart
-      </button>
-    </div>
+      
+      <div className="space-y-6">
+          <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Account Settings</h3>
+              <div className="grid gap-3">
+                  <button className="text-left w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all flex justify-between items-center group">
+                      <div className="flex items-center gap-3">
+                        <Bell className="w-5 h-5 text-slate-400 group-hover:text-indigo-500" />
+                        <span className="text-slate-700 dark:text-slate-300 font-medium">Notification Preferences</span>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500" />
+                  </button>
+                  <button className="text-left w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all flex justify-between items-center group">
+                      <div className="flex items-center gap-3">
+                        <Settings className="w-5 h-5 text-slate-400 group-hover:text-indigo-500" />
+                        <span className="text-slate-700 dark:text-slate-300 font-medium">Privacy & Security</span>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500" />
+                  </button>
+                  <button className="text-left w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all flex justify-between items-center group">
+                       <div className="flex items-center gap-3">
+                        <CreditCard className="w-5 h-5 text-slate-400 group-hover:text-indigo-500" />
+                        <span className="text-slate-700 dark:text-slate-300 font-medium">Payment Methods</span>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500" />
+                  </button>
+              </div>
+          </div>
+
+          <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
+              <button 
+                onClick={onSignOut}
+                className="w-full p-4 rounded-xl border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-semibold flex items-center justify-center gap-2"
+              >
+                  <LogOut className="w-5 h-5" />
+                  Sign Out
+              </button>
+          </div>
+      </div>
   </div>
 );
